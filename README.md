@@ -1,6 +1,6 @@
 # image-download-tool
 
-Fast, lightweight and NOT reliable tool for dowloading tons of images. 
+Fast, lightweight and NOT reliable tool for downloading tons of images. 
 
 ### How to use
 
