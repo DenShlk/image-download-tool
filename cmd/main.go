@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/RomanIschenko/nft-data-loader/internal/app"
-	"github.com/RomanIschenko/nft-data-loader/internal/config"
+	"image-download-tool/internal/app"
+	"image-download-tool/internal/config"
 	"runtime"
 )
 

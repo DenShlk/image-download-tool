@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 	"encoding/json"
-	"github.com/RomanIschenko/nft-data-loader/internal/config"
+	"image-download-tool/internal/config"
 	"io"
 	"log"
 	"net/http"
@@ -20,7 +20,7 @@ type App struct {
 
 func (app *App) load(ctx context.Context, item []string) {
 
-	name := item[1]
+	name := item[1] + ".img"
 	link := item[0]
 
 	//extension := link[len(link) - 4:]
@@ -34,7 +34,6 @@ func (app *App) load(ctx context.Context, item []string) {
 		return
 	}
 	defer file.Close()
-
 
 	req, err := http.NewRequestWithContext(ctx, "GET", link, nil)
 
@@ -76,8 +75,6 @@ func (app *App) runWorker(ctx context.Context) {
 	}
 }
 
-
-
 func (app *App) loadLinks(ctx context.Context) {
 	file, err := os.Open(app.cfg.SourceFile)
 	if err != nil {
@@ -91,9 +88,8 @@ func (app *App) loadLinks(ctx context.Context) {
 	items := [][]string{}
 
 	if err := json.NewDecoder(file).Decode(&items); err != nil {
-		log.Println("failed to umarshal json:", err)
+		log.Println("failed to unmarshal json:", err)
 	}
-	//items =
 
 	for _, item := range items {
 		select {
