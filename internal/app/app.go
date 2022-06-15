@@ -3,12 +3,16 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"image-download-tool/internal/config"
 	"io"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"sync/atomic"
 )
 
@@ -20,20 +24,21 @@ type App struct {
 
 func (app *App) load(ctx context.Context, item []string) {
 
-	name := item[1] + ".img"
+	name := item[1] + ".jpg"
 	link := item[0]
 
 	//extension := link[len(link) - 4:]
 	//name += extension
 
 	filePath := path.Join(app.cfg.TargetDir, name)
-	file, err := os.Create(filePath)
 
-	if err != nil {
-		log.Println("failed to open a file:", filePath, err)
-		return
+	if !app.cfg.Rewrite {
+		if _, err := os.Stat(filePath); !errors.Is(err, fs.ErrNotExist) {
+			// file exists
+			return
+		}
 	}
-	defer file.Close()
+	ensureDir(filePath)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", link, nil)
 
@@ -51,6 +56,14 @@ func (app *App) load(ctx context.Context, item []string) {
 		return
 	}
 	defer res.Body.Close()
+
+	file, err := os.Create(filePath)
+
+	if err != nil {
+		log.Println("failed to open a file:", filePath, err)
+		return
+	}
+	defer file.Close()
 
 	if _, err := io.Copy(file, res.Body); err != nil {
 		log.Printf("failed to write to a file: %e\n", err)
@@ -84,11 +97,11 @@ func (app *App) loadLinks(ctx context.Context) {
 
 	defer file.Close()
 
-	//var preItems interface{}
-	items := [][]string{}
+	var items [][]string
 
 	if err := json.NewDecoder(file).Decode(&items); err != nil {
 		log.Println("failed to unmarshal json:", err)
+		return
 	}
 
 	for _, item := range items {
@@ -100,7 +113,23 @@ func (app *App) loadLinks(ctx context.Context) {
 	}
 }
 
+func ensureDir(fileName string) error {
+	dirName := filepath.Dir(fileName)
+	if _, serr := os.Stat(dirName); serr != nil {
+		merr := os.MkdirAll(dirName, os.ModePerm)
+		if merr != nil {
+			return merr
+		}
+	}
+	return nil
+}
+
 func (app *App) Start(ctx context.Context) {
+	if err := ensureDir(app.cfg.TargetDir); err != nil {
+		fmt.Println("Target directory creation failed with error: " + err.Error())
+		return
+	}
+
 	for i := 0; i < app.cfg.Workers; i++ {
 		go app.runWorker(ctx)
 	}

@@ -8,14 +8,14 @@ Fast, lightweight and NOT reliable tool for downloading tons of images.
 1) Create json file with following structure:
 ```
     [
-      ['url', 'name/tag/id'],
-      ['url2', 'name2/tag2/id2'],
+      ['url', 'something1/id'],
+      ['url2', 'something2/something3/id2'],
       ...
     ]
 ```
 2) Run the .exe like 
 ```
-  main.exe -src link.txt -dst ./data/
+  main.exe -src links.json -dst ./data/
 ```
 3) Wait till your network provider goes offline
 

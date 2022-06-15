@@ -1,7 +1,10 @@
 package config
 
 type Config struct {
-	TargetDir string
+	TargetDir  string
 	SourceFile string
-	Workers int
+	Workers    int
+	Rewrite    bool
+	WorkTime   int
+	SleepTime  int
 }
